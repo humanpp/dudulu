@@ -1,0 +1,132 @@
+/* 记忆浏览器（文档 3 第 6.8 节）。
+   高度/滚动由 layout.css 的 .main-area > .memory-viewer 规则负责。 */
+
+.memory-viewer {
+  padding: var(--space-2xl) var(--space-xl);
+  background: var(--bg-primary);
+}
+
+.memory-viewer__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.memory-viewer__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.memory-viewer__back {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  padding: var(--space-sm);
+}
+
+.memory-viewer__title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* 搜索框固定顶部（文档 3 第 6.8 节） */
+.memory-viewer__search {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-primary);
+  padding: var(--space-sm) 0 var(--space-md);
+}
+
+.memory-viewer__filters {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.memory-viewer__filters .select {
+  width: auto;
+  min-width: 120px;
+}
+
+/* 记忆卡片（悬停轻微上浮） */
+.memory-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.memory-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.memory-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.memory-card__avatar {
+  font-size: var(--text-lg);
+}
+
+.memory-card__time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.memory-card__content {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-sm);
+}
+
+.memory-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* 情感标签：对应情感色的柔和版作背景（文档 3 第 6.8 节） */
+.memory-card__tag {
+  font-size: var(--text-xs);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-md);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.memory-card__tag--vulnerable { background: rgba(164, 181, 200, 0.25); }
+.memory-card__tag--conflict { background: rgba(206, 143, 122, 0.25); }
+.memory-card__tag--hostile { background: rgba(206, 143, 122, 0.35); }
+.memory-card__tag--affectionate { background: rgba(232, 160, 160, 0.25); }
+.memory-card__tag--playful { background: rgba(244, 199, 122, 0.30); }
+.memory-card__tag--reassuring { background: rgba(155, 181, 212, 0.25); }
+.memory-card__tag--curious { background: rgba(138, 175, 200, 0.25); }
+.memory-card__tag--neutral { background: var(--bg-secondary); }
+.memory-card__tag--withdrawn { background: rgba(165, 181, 200, 0.25); }
+.memory-card__tag--proactive { background: rgba(196, 168, 130, 0.25); }
+
+.memory-card__stat {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.memory-viewer__empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-3xl);
+  font-size: var(--text-sm);
+}

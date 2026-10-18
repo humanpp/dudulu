@@ -1,0 +1,41 @@
+/* 内部层展开（文档 3 第 5.4 节：12 维，默认折叠）。 */
+
+.internal-layer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-sm) var(--space-md);
+  padding: var(--space-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.internal-layer__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.internal-layer__label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.internal-layer__track {
+  height: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.internal-layer__fill {
+  height: 100%;
+  background: var(--accent-soft);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* 移动端：内部层改两列（12 维多列放不下） */
+@media (max-width: 480px) {
+  .internal-layer { grid-template-columns: 1fr 1fr; }
+}

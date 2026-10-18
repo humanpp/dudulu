@@ -1,0 +1,270 @@
+/* 布局系统（文档 3 第 6.1 节：三栏/两栏/单栏 + 断点）。 */
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* 侧边栏 */
+.sidebar {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  gap: var(--space-sm);
+}
+
+/* 移动端侧边栏遮罩：桌面端不占位（display:none），
+   移动端侧边栏滑出时盖住主区域，点击关闭 */
+.sidebar-mask {
+  display: none;
+}
+
+.sidebar__brand {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--accent-deep);
+  padding: var(--space-sm) var(--space-xs) var(--space-lg);
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+  position: relative;
+}
+
+.sidebar__item:hover {
+  background: var(--accent-ghost);
+}
+
+.sidebar__item--active {
+  background: var(--accent-ghost);
+}
+
+.sidebar__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+}
+
+.sidebar__name {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__new {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  border: 1px dashed var(--border-strong);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.sidebar__new:hover {
+  color: var(--accent-deep);
+  border-color: var(--accent-primary);
+  background: var(--accent-ghost);
+}
+
+/* 主区域 */
+.main-area {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  /* 显式高度：网格项本身会被拉伸到 100vh，这里再兜一层，
+     保证子页面的 flex/百分比高度一定有确定的参照 */
+  height: 100%;
+}
+
+/* 页面容器（非聊天页）：在 main-area 内撑满并内部滚动。
+   这些页面是 .main-area（flex 列 + overflow:hidden）的直接子元素，
+   不能用 min-height:100vh——那样内容超屏时会被裁掉且没有滚动条
+   （2026-10-17 实测：创建向导的「确认创建」被截在底部滑不到）。
+   聊天页（.chat-page）自带内部滚动，不适用此规则。 */
+.main-area > .character-select,
+.main-area > .character-create,
+.main-area > .character-edit,
+.main-area > .memory-viewer,
+.main-area > .settings {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 顶栏（移动端常驻；桌面端仅聊天页显示） */
+.topbar {
+  display: none;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.topbar__title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* 未读红点（文档 3 第 7.4 节） */
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+  flex-shrink: 0;
+}
+
+/* 状态面板（桌面常驻右侧） */
+.state-panel {
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.state-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.state-panel__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+}
+
+.state-panel__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  padding: var(--space-sm) 0;
+  width: 100%;
+}
+
+/* 呼吸动画（文档 3 第 9.6 节：一次性脉冲） */
+.state-panel--breathing {
+  animation: panel-breathe 600ms var(--ease-in-out);
+}
+
+@keyframes panel-breathe {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* 页面容器（非聊天页：居中单列） */
+.page {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2xl);
+}
+
+.page--narrow {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.page__title {
+  font-size: var(--text-2xl);
+  color: var(--text-primary);
+  margin-bottom: var(--space-xl);
+}
+
+/* 平板端：两栏（文档 3 第 6.1 节） */
+@media (max-width: 1024px) {
+  .app-layout { grid-template-columns: 64px 1fr 0; }
+
+  .sidebar__brand,
+  .sidebar__name {
+    display: none;
+  }
+
+  .sidebar {
+    align-items: center;
+    padding: var(--space-md);
+  }
+
+  .sidebar__item,
+  .sidebar__new {
+    justify-content: center;
+  }
+
+  .state-panel {
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 280px;
+    transform: translateX(100%);
+    transition: transform var(--duration-normal) var(--ease-out);
+    z-index: 100;
+  }
+
+  .state-panel--open { transform: translateX(0); }
+}
+
+/* 移动端：单栏（文档 3 第 6.1 节） */
+@media (max-width: 480px) {
+  .app-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+
+  .topbar { display: flex; }
+
+  /* 侧边栏滑出时的遮罩 */
+  .sidebar-mask {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: var(--bg-overlay);
+    z-index: 90;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 240px;
+    transform: translateX(-100%);
+    transition: transform var(--duration-normal) var(--ease-out);
+    z-index: 100;
+  }
+
+  .sidebar--open { transform: translateX(0); }
+
+  .page {
+    padding: var(--space-lg);
+  }
+}

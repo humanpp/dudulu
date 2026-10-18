@@ -1,0 +1,156 @@
+/* 角色创建向导（文档 3 第 6.4 节：步骤指示 + 步骤切换动效）。 */
+
+.wizard {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.wizard__steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+
+.wizard__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.wizard__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-strong);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.wizard__step--active .wizard__dot {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  transform: scale(1.2);
+}
+
+.wizard__step--done .wizard__dot {
+  background: var(--accent-soft);
+  border-color: var(--accent-primary);
+}
+
+.wizard__step--active {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.wizard__line {
+  width: 32px;
+  height: 2px;
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+}
+
+/* 步骤切换：当前淡出左移，新步骤淡入右移（400ms） */
+.wizard__panel {
+  animation: wizard-in var(--duration-normal) var(--ease-out);
+}
+
+@keyframes wizard-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.wizard__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-2xl);
+  gap: var(--space-md);
+}
+
+/* 配置字段行（带锁定与随机按钮，文档 3 第 6.4 节） */
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.field-row__label {
+  width: 72px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.field-row__control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.field-row__action {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.field-row__action:hover {
+  background: var(--accent-ghost);
+  color: var(--accent-deep);
+}
+
+.field-row__action--locked {
+  color: var(--accent-primary);
+}
+
+/* 随机按钮点击时的轻微旋转（文档 3 第 6.4 节：不超过 360°） */
+.field-row__action--rolling {
+  animation: dice-roll var(--duration-normal) var(--ease-out);
+}
+
+@keyframes dice-roll {
+  from { transform: rotate(0); }
+  to   { transform: rotate(180deg); }
+}
+
+/* 预览卡片 */
+.wizard__preview-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2xl);
+  text-align: center;
+}
+
+/* 校验问题列表（文档 3 第 6.4 节：列在配置卡片底部，不阻止编辑） */
+.validation-issues {
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: rgba(212, 184, 122, 0.12);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.validation-issues__item {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+}
+
+.validation-issues__item::before {
+  content: "⚠";
+  flex-shrink: 0;
+}

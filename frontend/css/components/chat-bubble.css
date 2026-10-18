@@ -1,0 +1,117 @@
+/* 聊天气泡（文档 3 第 5.1 节）。 */
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
+
+.chat-message--user {
+  align-self: flex-end;
+}
+
+.chat-message--assistant {
+  align-self: flex-start;
+}
+
+.chat-bubble {
+  max-width: 72%;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  position: relative;
+  animation: bubble-in var(--duration-normal) var(--ease-spring);
+  word-break: break-word;
+}
+
+.chat-message--user .chat-bubble {
+  align-self: flex-end;
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border-bottom-right-radius: var(--radius-xs);
+}
+
+.chat-message--assistant .chat-bubble {
+  align-self: flex-start;
+  background: var(--accent-soft);   /* 随角色变色（文档 1 第 3.3 节） */
+  color: var(--text-primary);
+  border-bottom-left-radius: var(--radius-xs);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-bubble__content {
+  white-space: pre-wrap;
+}
+
+.chat-bubble__content code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background: var(--accent-ghost);
+  border-radius: var(--radius-xs);
+  padding: 2px var(--space-xs);
+}
+
+.chat-bubble__content pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background: var(--accent-ghost);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  overflow-x: auto;
+  margin: var(--space-sm) 0;
+}
+
+.chat-bubble__content pre code {
+  background: none;
+  padding: 0;
+}
+
+.chat-bubble__content a {
+  text-decoration: underline;
+}
+
+.chat-bubble__time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+  text-align: right;
+}
+
+.chat-message--user .chat-bubble__time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* AI 气泡头像（文档 3 第 6.6 节：32px 圆形） */
+.chat-message--assistant .chat-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-xs);
+  box-shadow: var(--shadow-xs);
+}
+
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 移动端：气泡最大宽度 85%（文档 3 第 10.2 节） */
+@media (max-width: 480px) {
+  .chat-bubble { max-width: 85%; }
+  .chat-message { max-width: 100%; }
+}

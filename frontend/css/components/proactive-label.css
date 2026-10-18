@@ -1,0 +1,25 @@
+/* 主动消息标签（文档 3 第 5.1 节）。 */
+
+.proactive-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-xs);
+  color: var(--accent-deep);
+  margin-bottom: var(--space-xs);
+  padding-left: var(--space-xs);
+}
+
+.proactive-label__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  animation: pulse-dot 2s var(--ease-in-out) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}

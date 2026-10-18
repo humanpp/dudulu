@@ -1,0 +1,130 @@
+/* 角色编辑页（文档 3 第 6.5 节）。
+   高度/滚动由 layout.css 的 .main-area > .character-edit 规则负责。 */
+
+.character-edit {
+  padding: var(--space-2xl) var(--space-xl);
+  background: var(--bg-primary);
+}
+
+.character-edit__inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.character-edit__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.character-edit__back {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  padding: var(--space-sm);
+}
+
+.character-edit__title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+/* 分组卡片（文档 3 第 6.5 节：每组独立） */
+.edit-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.edit-card__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+/* 主题色色块（文档 3 第 6.5 节：色块 + 十六进制值） */
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.theme-row__swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+.theme-row__label {
+  width: 48px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.theme-row__hex {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+/* 版本历史（文档 3 第 6.5 节：最多 20 条） */
+.version-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.version-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  font-size: var(--text-sm);
+}
+
+.version-item__time {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.version-item__reason {
+  flex: 1;
+  color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 底部操作栏 */
+.character-edit__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  position: sticky;
+  bottom: 0;
+  padding: var(--space-md) 0;
+  background: var(--bg-primary);
+}
+
+/* 危险操作区 */
+.edit-card--danger {
+  border: 1px solid rgba(200, 138, 138, 0.3);
+}
+
+.edit-card__danger-actions {
+  display: flex;
+  gap: var(--space-md);
+}

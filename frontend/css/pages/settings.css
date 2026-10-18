@@ -1,0 +1,119 @@
+/* 设置页（文档 3 第 6.9 节）。
+   高度/滚动由 layout.css 的 .main-area > .settings 规则负责。 */
+
+.settings {
+  padding: var(--space-2xl) var(--space-xl);
+  background: var(--bg-primary);
+}
+
+.settings__inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.settings__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.settings__back {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  padding: var(--space-sm);
+}
+
+.settings__title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+/* 分组卡片（文档 3 第 6.9 节：每组一张卡片） */
+.settings-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.settings-card__title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.settings-card__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.settings-card__row:last-child {
+  margin-bottom: 0;
+}
+
+.settings-card__label {
+  width: 88px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.settings-card__control {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* API Key 行（文档 3 第 6.9 节：占位符态 + 已配置标记 + 显示切换） */
+.api-key-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.api-key-configured {
+  font-size: var(--text-xs);
+  color: var(--color-success);
+  white-space: nowrap;
+}
+
+.api-key-toggle {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+
+.api-key-toggle:hover {
+  background: var(--accent-ghost);
+}
+
+/* 账号信息行 */
+.settings-card__static {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.settings-card__actions {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.settings__save {
+  position: sticky;
+  bottom: 0;
+  padding: var(--space-md) 0;
+  background: var(--bg-primary);
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,0 +1,176 @@
+/* 角色创建向导页（文档 3 第 6.4 节）。
+   高度/滚动由 layout.css 的 .main-area > .character-create 规则负责。 */
+
+.character-create {
+  padding: var(--space-3xl) var(--space-xl);
+  background: var(--bg-primary);
+}
+
+.character-create__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+/* 模板选择网格（向导 Step 1） */
+.wizard__template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-lg);
+}
+
+.wizard__template {
+  background: var(--bg-card);
+  border: 2px solid transparent;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.wizard__template:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.wizard__template--selected {
+  border-color: var(--accent-primary);
+}
+
+/* 特殊入口卡片（随机创建 / 空白创建）：虚线边框 + 主题色图标 */
+.wizard__template--special {
+  border: 2px dashed var(--border-strong);
+  background: var(--bg-primary);
+}
+
+.wizard__template--special:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-deep);
+}
+
+.wizard__template--special .wizard__template-icon {
+  color: var(--accent-deep);
+}
+
+.wizard__template-icon {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-sm);
+}
+
+.wizard__template-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.wizard__template-desc {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+}
+
+/* 配置卡片（Step 2） */
+.wizard__config-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl);
+}
+
+.wizard__config-group {
+  margin-bottom: var(--space-xl);
+}
+
+.wizard__config-group-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+/* Big Five 滑杆行（文档 3 第 6.4 节） */
+.bigfive-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.bigfive-row__label {
+  width: 64px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.bigfive-row__track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.bigfive-row__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent-primary));
+  border-radius: var(--radius-full);
+}
+
+.bigfive-row__value {
+  width: 40px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* 预览卡片（Step 3） */
+.wizard__preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.wizard__preview-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  background: var(--accent-ghost);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.wizard__preview-name {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+}
+
+.wizard__preview-basic {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.wizard__preview-traits {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.wizard__preview-quote {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.wizard__preview-state {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}

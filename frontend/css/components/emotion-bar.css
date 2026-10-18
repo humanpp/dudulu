@@ -1,0 +1,64 @@
+/* 关系进度条（文档 3 第 5.3 节）。 */
+
+.relationship-bar {
+  padding: var(--space-xl);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.relationship-bar__stage {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-deep);
+  margin-bottom: var(--space-lg);
+}
+
+.relationship-bar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.relationship-bar__label {
+  width: 60px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.relationship-bar__track {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.relationship-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.relationship-bar__fill--affection {
+  background: linear-gradient(90deg, #E8A0A0, #D48080);
+}
+
+.relationship-bar__fill--trust {
+  background: linear-gradient(90deg, #9BB5D4, #7A9BBF);
+}
+
+.relationship-bar__fill--attachment {
+  background: linear-gradient(90deg, #C4A8D4, #A88ABF);
+}
+
+.relationship-bar__value {
+  width: 48px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+}

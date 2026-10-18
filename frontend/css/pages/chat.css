@@ -1,0 +1,187 @@
+/* 聊天页（文档 3 第 6.6 节）。 */
+
+.chat-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+
+.chat-header__back {
+  display: none;
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  padding: var(--space-sm);
+}
+
+.chat-header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--accent-ghost);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+}
+
+.chat-header__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-header__name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.chat-header__stage {
+  font-size: var(--text-xs);
+  color: var(--accent-deep);
+}
+
+.chat-header__actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* 消息列表（文档 3 第 6.6 节：从底部向上排列，最新在底部） */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  scroll-behavior: smooth;
+}
+
+.chat-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.chat-empty__greeting {
+  font-size: var(--text-lg);
+  color: var(--accent-deep);
+  margin-bottom: var(--space-sm);
+}
+
+/* 输入区（固定底部，轻上阴影） */
+.chat-input {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
+  padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  box-shadow: 0 -2px 12px rgba(61, 58, 53, 0.04);
+}
+
+.chat-input__field {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--text-base);
+  font-family: inherit;
+  line-height: var(--leading-normal);
+  max-height: 120px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.chat-input__field:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+  background: var(--bg-card);
+}
+
+.chat-input__send {
+  flex-shrink: 0;
+}
+
+/* 错误气泡（文档 3 第 7.6 节） */
+.chat-bubble--error {
+  border: 1px solid var(--color-error);
+}
+
+.chat-message__retry {
+  align-self: flex-start;
+  margin-top: var(--space-xs);
+  font-size: var(--text-xs);
+  color: var(--color-error);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-error);
+}
+
+/* 左滑露出删除按钮（文档 3 第 10.3 节） */
+.chat-message {
+  position: relative;
+  /* 横向手势交给滑动删除，纵向仍归页面滚动 */
+  touch-action: pan-y;
+}
+
+.chat-message__delete {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--color-error);
+  color: var(--text-inverse);
+  font-size: var(--text-sm);
+}
+
+.chat-message .chat-bubble,
+.chat-message .chat-avatar,
+.chat-message .proactive-label {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.chat-message--swiped .chat-bubble,
+.chat-message--swiped .chat-avatar,
+.chat-message--swiped .proactive-label {
+  transform: translateX(-64px);
+}
+
+/* 重新生成入口（文档 3 第 7.2 节） */
+.chat-regenerate {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-sm) 0 var(--space-lg);
+}
+
+/* 移动端：顶栏返回按钮 */
+@media (max-width: 480px) {
+  .chat-header { padding: var(--space-sm) var(--space-md); }
+  .chat-messages { padding: var(--space-md); }
+  .chat-input { padding: var(--space-sm) var(--space-md); }
+  .chat-header__back { display: inline-flex; }
+}

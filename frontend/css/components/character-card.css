@@ -1,0 +1,120 @@
+/* 角色卡片（文档 3 第 5.5 节）。 */
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  gap: var(--space-xl);
+  justify-content: center;
+}
+
+.character-card {
+  width: 200px;
+  padding: var(--space-xl);
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+}
+
+.character-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.character-card--active {
+  border: 2px solid var(--accent-primary);
+}
+
+.character-card__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  margin: 0 auto var(--space-lg);
+  background: var(--accent-ghost);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.character-card__name {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.character-card__occupation {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.character-card__stage {
+  font-size: var(--text-sm);
+  color: var(--accent-deep);
+  margin-bottom: var(--space-sm);
+}
+
+.character-card__progress {
+  height: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.character-card__progress-fill {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* 稀有标记（文档 1 第 5.6 节：is_rare 小图标） */
+.character-card__rare {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  font-size: var(--text-sm);
+}
+
+/* 新建卡片：虚线边框 + + 图标 */
+.character-card--new {
+  border: 2px dashed var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  color: var(--text-secondary);
+  min-height: 240px;
+}
+
+.character-card--new:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-deep);
+}
+
+.character-card__plus {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-normal);
+}
+
+/* 入场动画：卡片依次淡入（文档 3 第 6.3 节，每张延迟 50ms） */
+.character-card {
+  animation: card-in var(--duration-normal) var(--ease-out) both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

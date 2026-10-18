@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,
+        viewport-fit=cover">
+  <title>dudulu · 嘟嘟噜</title>
+  <link rel="icon" href="data:,"><!-- 抑制 favicon 404 噪音 -->
+
+  <!-- 设计变量与基础样式（文档 3 第 4 章目录结构） -->
+  <link rel="stylesheet" href="css/tokens.css?v=20261018d">
+  <link rel="stylesheet" href="css/base.css?v=20261018d">
+  <link rel="stylesheet" href="css/layout.css?v=20261018d">
+
+  <!-- 组件样式 -->
+  <link rel="stylesheet" href="css/components/chat-bubble.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/proactive-label.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/emotion-ring.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/emotion-bar.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/internal-layer.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/character-card.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/wizard.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/button.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/input.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/modal.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/toast.css?v=20261018d">
+  <link rel="stylesheet" href="css/components/skeleton.css?v=20261018d">
+
+  <!-- 页面样式 -->
+  <link rel="stylesheet" href="css/pages/auth.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/chat.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/state-panel.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/character-select.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/character-create.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/character-edit.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/memory-viewer.css?v=20261018d">
+  <link rel="stylesheet" href="css/pages/settings.css?v=20261018d">
+
+  <!-- Alpine.js（本地 vendor：Phase 10 起无外网依赖，离线/内网可用）。
+       注意：vendor 构建结尾是 window.Alpine=...; queueMicrotask(()=>start())
+       ——不等 DOMContentLoaded，微任务里立即启动。因此 app.js 必须排在
+       它之前（deferred 脚本按文档顺序执行），并在 alpine:init 事件里
+       注册组件（见 js/app.js）。顺序反了会全线 "xxx is not defined"。 -->
+  <script type="module" src="js/app.js"></script>
+  <script defer src="assets/vendor/alpine.min.js"></script>
+</head>
+<body>
+  <div id="app" x-data="appShell()" x-init="init()">
+
+    <!-- ═══ 登录/注册页（#/login）═══ -->
+    <div x-show="route === '/login'" class="auth-page">
+      <div class="auth-card" x-data="authPage()" x-init="init()">
+        <div class="auth-card__logo">🌿</div>
+        <h1 class="auth-card__title">dudulu</h1>
+        <p class="auth-card__subtitle">嘟嘟噜</p>
+
+        <form class="auth-card__form" @submit.prevent="submit()">
+          <template x-if="error">
+            <p class="auth-card__error" x-text="error"></p>
+          </template>
+          <input class="input" type="text" x-model="username"
+                 placeholder="用户名" autocomplete="username" required>
+          <input class="input" type="password" x-model="password"
+                 placeholder="密码" autocomplete="current-password" required>
+          <button class="btn btn--primary btn--block" type="submit"
+                  :disabled="loading" x-text="submitLabel"></button>
+        </form>
+
+        <p class="auth-card__switch">
+          <span x-text="isLogin ? '还没有账号？' : '已有账号？'"></span>
+          <button type="button" @click="toggleMode()"
+                  x-text="isLogin ? '注册' : '登录'"></button>
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══ 应用主体（登录后的全部页面）═══ -->
+    <template x-if="isLoggedIn()">
+      <div class="app-layout">
+
+        <!-- 侧边栏：角色列表 + 新建 + 设置 -->
+        <aside class="sidebar" :class="{ 'sidebar--open': sidebarOpen }">
+          <div class="sidebar__brand">dudulu</div>
+
+          <!-- 角色列表读 store：创建/归档/恢复后由 store.loadCharacters()
+               统一刷新，侧边栏与选择页同步（2026-10-18 修"创建完不显示"） -->
+          <template x-for="character in $store.app.characters"
+                    :key="character.id">
+            <div class="sidebar__item"
+                 :class="{ 'sidebar__item--active': isActiveChat(character.id) }"
+                 @click="openChat(character.id)">
+              <span class="sidebar__avatar" x-text="avatarOf(character)"></span>
+              <span class="sidebar__name" x-text="character.name"></span>
+              <span class="unread-dot" style="margin-left: auto"
+                    x-show="$store.app.unreadProactive[character.id]"></span>
+            </div>
+          </template>
+
+          <div class="sidebar__new" @click="openCreate()">
+            <span class="sidebar__avatar">＋</span>
+            <span class="sidebar__name">新建</span>
+          </div>
+
+          <div style="margin-top: auto; display: flex; flex-direction: column;
+                      gap: var(--space-sm)">
+            <div class="sidebar__item" @click="openSettings()">
+              <span class="sidebar__avatar">⚙️</span>
+              <span class="sidebar__name">设置</span>
+            </div>
+            <div class="sidebar__item" @click="logout()">
+              <span class="sidebar__avatar">🚪</span>
+              <span class="sidebar__name">退出</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- 移动端侧边栏遮罩（文档 3 第 10.2 节：滑出时带遮罩，点击关闭） -->
+        <div class="sidebar-mask" x-show="sidebarOpen"
+             @click="sidebarOpen = false" aria-hidden="true"></div>
+
+        <!-- 网络断开横幅（文档 3 第 7.6 节：顶部细条） -->
+        <div class="offline-banner" x-show="offline"
+             title="网络已断开，正在自动重连"></div>
+
+        <!-- 移动端顶栏（文档 3 第 6.6 节：角色名后带红点） -->
+        <header class="topbar">
+          <button class="btn btn--ghost btn--icon"
+                  @click="sidebarOpen = !sidebarOpen" aria-label="菜单">☰</button>
+          <span class="topbar__title">
+            <span x-text="route === '/characters' ? '选择角色'
+              : route === '/settings' ? '设置'
+              : route === '/memory' ? '记忆浏览器'
+              : route === '/character/create' ? '创建角色'
+              : $store.app.currentCharacter?.name || 'dudulu'"></span>
+            <span class="unread-dot" x-show="totalUnread > 0"></span>
+          </span>
+          <button class="btn btn--ghost btn--icon" style="margin-left: auto"
+                  @click="toggleStatePanel()"
+                  x-show="route.startsWith('/chat/')"
+                  aria-label="状态面板">📊</button>
+        </header>
+
+        <!-- 主区域 -->
+        <main class="main-area">
+
+          <!-- 角色选择页（#/characters） -->
+          <div x-show="route === '/characters'" class="character-select"
+               x-data="characterSelectPage()" x-init="init()">
+            <div class="character-select__header">
+              <h1 class="character-select__title"
+                  x-text="showArchived
+                    ? '已归档的角色'
+                    : '选择你的陪伴角色'"></h1>
+            </div>
+
+            <!-- 正常角色列表 -->
+            <div class="character-select__grid"
+                 x-show="!loading && !showArchived">
+              <template x-for="character in characters" :key="character.id">
+                <div class="character-card" @click="openChat(character)">
+                  <div class="character-card__avatar"
+                       x-text="avatarOf(character)"></div>
+                  <!-- 稀有角色小图标（文档 1 第 5.6 节：增加收集感） -->
+                  <span class="character-card__rare" x-show="character.is_rare"
+                        title="稀有角色">✨</span>
+                  <div class="character-card__name">
+                    <span x-text="character.name"></span>
+                    <span class="unread-dot"
+                          x-show="$store.app.unreadProactive[character.id]">
+                    </span>
+                  </div>
+                  <div class="character-card__occupation"
+                       x-text="character.occupation || '陪你聊天'"></div>
+                  <div class="character-card__stage"
+                       x-text="stageLabel(character) + ' ' + stageCode(character)"></div>
+                  <div class="character-card__progress">
+                    <div class="character-card__progress-fill"
+                         :style="`width: ${stageProgress(character)}%`"></div>
+                  </div>
+                </div>
+              </template>
+
+              <div class="character-card character-card--new"
+                   @click="openCreate()">
+                <span class="character-card__plus">＋</span>
+                <span>新建</span>
+              </div>
+            </div>
+
+            <!-- 已归档列表（恢复入口） -->
+            <div class="character-select__grid"
+                 x-show="!loading && showArchived">
+              <template x-for="character in archivedCharacters"
+                        :key="character.id">
+                <div class="character-card character-card--archived">
+                  <div class="character-card__avatar"
+                       x-text="avatarOf(character)"></div>
+                  <div class="character-card__name">
+                    <span x-text="character.name"></span>
+                  </div>
+                  <div class="character-card__occupation"
+                       x-text="character.occupation || ''"></div>
+                  <button class="btn btn--ghost" style="margin-top: 12px"
+                          @click.stop="restore(character)"
+                          :disabled="restoring">恢复</button>
+                </div>
+              </template>
+              <p class="memory-viewer__empty"
+                 x-show="!archivedCharacters.length">
+                还没有归档的角色
+              </p>
+            </div>
+
+            <div x-show="loading">
+              <div class="character-select__grid">
+                <div class="skeleton skeleton--card"></div>
+                <div class="skeleton skeleton--card"></div>
+                <div class="skeleton skeleton--card"></div>
+              </div>
+            </div>
+
+            <p x-show="loadError" class="auth-card__error"
+               style="max-width: 360px; margin: var(--space-xl) auto"
+               x-text="loadError"></p>
+
+            <!-- 底部：已归档入口 -->
+            <div class="character-select__footer">
+              <button class="btn btn--ghost" @click="toggleArchived()">
+                <span x-text="showArchived
+                  ? '← 返回角色列表'
+                  : `🗂 已归档（${archivedCharacters.length}）`"></span>
+              </button>
+            </div>
+
+            <button class="btn btn--ghost character-select__settings"
+                    @click="openSettings()" aria-label="设置">⚙️ 设置</button>
+          </div>
+
+          <!-- 角色创建向导（#/character/create） -->
+          <div x-show="route === '/character/create'" class="character-create"
+               x-data="characterCreatePage()" x-init="init()">
+            <h1 class="character-create__title">创建你的陪伴角色</h1>
+            <div class="wizard">
+
+              <!-- 步骤指示器 -->
+              <div class="wizard__steps">
+                <template x-for="(step, index) in steps" :key="step">
+                  <div style="display: flex; align-items: center;
+                              gap: var(--space-md)">
+                    <div class="wizard__step"
+                         :class="{ 'wizard__step--active': index === currentStep,
+                                   'wizard__step--done': index < currentStep }">
+                      <span class="wizard__dot"></span>
+                      <span x-text="step"></span>
+                    </div>
+                    <div class="wizard__line"
+                         x-show="index < steps.length - 1"></div>
+                  </div>
+                </template>
+              </div>
+
+              <div class="wizard__panel" :key="currentStep">
+                <!-- Step 1：选择入口（8 模板 + 随机创建 + 空白创建） -->
+                <div x-show="currentStep === 0">
+                  <div class="wizard__template-grid">
+                    <!-- 随机创建：随机模板 + 随机种子，一键落库 -->
+                    <div class="wizard__template wizard__template--special"
+                         @click="createRandomNow()">
+                      <div class="wizard__template-icon"
+                           x-text="creatingRandom ? '⏳' : '🎲'"></div>
+                      <div class="wizard__template-name">
+                        <span x-text="creatingRandom ? '生成中…' : '随机创建'">
+                        </span>
+                      </div>
+                      <div class="wizard__template-desc">随机模板 + 随机设定</div>
+                    </div>
+
+                    <!-- 空白创建：自己写名字/职业/性格/背景故事 -->
+                    <div class="wizard__template wizard__template--special"
+                         @click="startBlank()">
+                      <div class="wizard__template-icon">📝</div>
+                      <div class="wizard__template-name">空白创建</div>
+                      <div class="wizard__template-desc">自由填写全部字段</div>
+                    </div>
+
+                    <template x-for="template in templates"
+                              :key="template.id">
+                      <div class="wizard__template"
+                           :class="{ 'wizard__template--selected':
+                                     selectedTemplate === template.id }"
+                           @click="selectTemplate(template.id)">
+                        <div class="wizard__template-icon"
+                             x-text="template.icon || '✨'"></div>
+                        <div class="wizard__template-name"
+                             x-text="template.name"></div>
+                        <div class="wizard__template-desc"
+                             x-text="template.description || ''"></div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Step 2：配置角色 -->
+                <div x-show="currentStep === 1" class="wizard__config-card">
+                  <div class="wizard__config-group">
+                    <div class="wizard__config-group-title">基础</div>
+                    <div class="field-row">
+                      <span class="field-row__label">名字</span>
+                      <div class="field-row__control">
+                        <input class="input" x-model="profile.name"
+                               placeholder="角色名字" @input="validate()">
+                        <button type="button" class="field-row__action"
+                                @click="randomizeField('name')"
+                                title="按性别随机取名">🎲</button>
+                        <button type="button" class="field-row__action"
+                                :class="{ 'field-row__action--locked':
+                                          isLocked('name') }"
+                                @click="toggleLock('name')"
+                                title="锁定名字（随机时不改）">🔒</button>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <span class="field-row__label">性别</span>
+                      <div class="field-row__control">
+                        <select class="input select"
+                                x-model="profile.gender">
+                          <option value="female">女</option>
+                          <option value="male">男</option>
+                          <option value="non_binary">中性</option>
+                        </select>
+                        <button type="button" class="field-row__action"
+                                :class="{ 'field-row__action--locked':
+                                          isLocked('gender') }"
+                                @click="toggleLock('gender')">🔒</button>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <span class="field-row__label">年龄</span>
+                      <div class="field-row__control">
+                        <input class="input" type="number"
+                               x-model.number="profile.age" min="18" max="60"
+                               @input="validate()">
+                        <button type="button" class="field-row__action"
+                                :class="{ 'field-row__action--locked':
+                                          isLocked('age'),
+                                          'field-row__action--rolling':
+                                          isLocked('age') }"
+                                @click="randomizeField('age')"
+                                title="随机年龄">🎲</button>
+                        <button type="button" class="field-row__action"
+                                :class="{ 'field-row__action--locked':
+                                          isLocked('age') }"
+                                @click="toggleLock('age')">🔒</button>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <span class="field-row__label">体型</span>
+                      <div class="field-row__control">
+                        <!-- 取值是后端枚举（slim/athletic/curvy/plump），
+                             中文仅作显示；用中文当 value 会选不中模板值、
+                             随机结果也显示不出来 -->
+                        <select class="input select"
+                                x-model="profile.appearance.body_type">
+                          <option value="slim">纤细</option>
+                          <option value="athletic">健壮</option>
+                          <option value="curvy">丰满</option>
+                          <option value="plump">圆润</option>
+                        </select>
+                        <button type="button" class="field-row__action"
+                                @click="randomizeField('body_type')">🎲</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="wizard__config-group">
+                    <div class="wizard__config-group-title">性格</div>
+                    <!-- Alpine 遍历对象：解构顺序是 (值, 键名)——
+                         实测 (key, value) 会让标签空、宽度 NaN -->
+                    <template x-for="(value, key) in (profile.personality
+                              ? profile.personality.big_five : {})"
+                              :key="key">
+                      <div class="bigfive-row">
+                        <span class="bigfive-row__label"
+                              x-text="bigFiveLabel(key)"></span>
+                        <div class="bigfive-row__track">
+                          <div class="bigfive-row__fill"
+                               :style="`width: ${value * 100}%`"></div>
+                        </div>
+                        <span class="bigfive-row__value"
+                              x-text="Number(value).toFixed(2)"></span>
+                        <!-- 单维随机：只改这一维，其余四维不动 -->
+                        <button type="button" class="field-row__action"
+                                @click="randomizeField('big_five', key)"
+                                :title="`随机${bigFiveLabel(key)}`">🎲</button>
+                      </div>
+                    </template>
+                  </div>
+
+                  <div class="wizard__config-group">
+                    <div class="wizard__config-group-title">背景与性格</div>
+                    <div class="field-row">
+                      <span class="field-row__label">职业</span>
+                      <div class="field-row__control">
+                        <input class="input" x-model="profile.background.occupation"
+                               placeholder="如：插画师、健身教练"
+                               @input="validate()">
+                        <button type="button" class="field-row__action"
+                                @click="randomizeField('occupation')"
+                                title="随机职业">🎲</button>
+                      </div>
+                    </div>
+                    <div class="field-row">
+                      <span class="field-row__label">性格特质</span>
+                      <div class="field-row__control">
+                        <input class="input" x-model="traitsText"
+                               placeholder="用顿号分隔：温柔、敏感、有主见"
+                               @input="syncTraitsFromText(); validate()">
+                      </div>
+                    </div>
+                    <div class="field-row" style="align-items: flex-start">
+                      <span class="field-row__label" style="padding-top: 12px">
+                        背景故事
+                      </span>
+                      <div class="field-row__control">
+                        <textarea class="input" rows="4"
+                                  x-model="profile.background.current_state"
+                                  placeholder="自由编写她的来历、处境、正在经历的事……"
+                                  @input="validate()"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="wizard__config-group">
+                    <div class="wizard__config-group-title">可见性</div>
+                    <div class="field-row">
+                      <span class="field-row__label">可见性</span>
+                      <div class="field-row__control">
+                        <select class="input select"
+                                x-model="profile.visibility.is_public">
+                          <option :value="false">仅自己可见</option>
+                          <option :value="true">所有人可见</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="validation-issues" x-show="validationIssues.length">
+                    <template x-for="issue in validationIssues" :key="issue.field">
+                      <div class="validation-issues__item"
+                           x-text="issue.message"></div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Step 3：预览确认 -->
+                <div x-show="currentStep === 2" class="wizard__preview-card">
+                  <div class="wizard__preview">
+                    <div class="wizard__preview-avatar"
+                         x-text="selectedTemplateIcon()"></div>
+                    <div class="wizard__preview-name" x-text="profile.name"></div>
+                    <div class="wizard__preview-basic"
+                         x-text="`${profile.age} 岁 · ${profile.gender === 'female'
+                           ? '女' : profile.gender === 'male' ? '男' : '中性'}
+                           · ${profile.background?.occupation || ''}`"></div>
+                    <div class="wizard__preview-traits"
+                         x-text="(profile.personality?.traits || []).join(' · ')"></div>
+                    <div class="wizard__preview-quote"
+                         x-text="`「${(profile.speech_style?.catchphrases
+                           || ['……'])[0]}」`"></div>
+                    <div class="wizard__preview-state"
+                         x-text="`好感度 ${profile.relationship_defaults
+                           ?.initial_affection ?? 25} · 信任度
+                           ${profile.relationship_defaults
+                             ?.initial_trust ?? 30}`"></div>
+                    <div class="wizard__preview-state"
+                         x-text="`可见性：${profile.visibility?.is_public
+                           ? '所有人可见' : '仅自己可见'}`"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wizard__actions">
+                <button class="btn btn--ghost" @click="prevStep()"
+                        x-show="currentStep > 0">← 上一步</button>
+                <button class="btn btn--ghost" @click="randomizeAll()"
+                        x-show="currentStep === 1">🎲 随机全部</button>
+                <button class="btn btn--primary" @click="nextStep()"
+                        x-show="currentStep === 1"
+                        :disabled="!canAdvance">下一步 →</button>
+                <button class="btn btn--primary" @click="create()"
+                        x-show="currentStep === 2"
+                        :disabled="!canAdvance || submitting"
+                        x-text="submitting ? '创建中…' : '确认创建'"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 聊天页（#/chat/{id}） -->
+          <div x-show="route.startsWith('/chat/')" class="chat-page"
+               x-data="chatPage()" x-init="init()">
+            <div class="chat-header">
+              <button class="chat-header__back btn btn--ghost btn--icon"
+                      @click="openCharacters()" aria-label="返回">←</button>
+              <div class="chat-header__avatar"
+                   x-text="character?.name?.charAt(0) || '🌿'"></div>
+              <div class="chat-header__info">
+                <div class="chat-header__name">
+                  <span x-text="character?.name || '…'"></span>
+                  <span class="chat-header__stage"
+                    x-text="character?.relationship_stage_label
+                      || character?.stage_label || ''"></span>
+                </div>
+              </div>
+              <div class="chat-header__actions">
+                <button class="btn btn--ghost btn--icon"
+                        @click="openMemory()" aria-label="记忆">📖</button>
+                <button class="btn btn--ghost btn--icon"
+                        @click="openEdit()" aria-label="编辑角色">✏️</button>
+              </div>
+            </div>
+
+            <div class="chat-messages" x-ref="messages">
+              <template x-for="message in messages" :key="message.id">
+                <div class="chat-message"
+                     :class="[`chat-message--${message.role}`,
+                       { 'chat-message--swiped':
+                         swipedMessageId === message.id }]"
+                     @touchstart="onMessageTouchStart(message, $event)"
+                     @touchmove="onMessageTouchMove($event)"
+                     @touchend="onMessageTouchEnd()"
+                     @touchcancel="onMessageTouchEnd()"
+                     @mousedown="onMessageTouchStart(message, $event)"
+                     @mouseup="onMessageTouchEnd()"
+                     @mouseleave="onMessageTouchEnd()">
+                  <!-- 左滑露出的删除按钮（文档 3 第 10.3 节） -->
+                  <button class="chat-message__delete" type="button"
+                          x-show="swipedMessageId === message.id"
+                          @click.stop="deleteMessage(message)">删除</button>
+                  <template x-if="message.isProactive">
+                    <div class="proactive-label">
+                      <span class="proactive-label__dot"></span>
+                      <span x-text="`${character?.nickname || character?.name
+                        || ''}主动找你`"></span>
+                    </div>
+                  </template>
+                  <template x-if="message.role === 'assistant'
+                                  && !message.isProactive">
+                    <div class="chat-avatar"
+                         x-text="character?.name?.charAt(0) || '🌿'"></div>
+                  </template>
+                  <div class="chat-bubble"
+                       :class="`chat-bubble--${message.role}`,
+                         { 'chat-bubble--error': message.status === 'failed' }">
+                    <div class="chat-bubble__content"
+                         x-html="renderMarkdown(message.content)"></div>
+                    <div class="chat-bubble__time"
+                         x-text="formatTimestamp(message.timestamp)"></div>
+                  </div>
+                  <button class="chat-message__retry"
+                          x-show="message.status === 'failed'"
+                          @click="retry()">重试</button>
+                </div>
+              </template>
+
+              <template x-if="isStreaming">
+                <div class="chat-message chat-message--assistant">
+                  <div class="chat-bubble chat-bubble--assistant">
+                    <div class="chat-bubble__content"
+                         x-html="renderMarkdown(streamingContent)"></div>
+                    <span class="streaming-cursor"></span>
+                  </div>
+                </div>
+              </template>
+
+              <!-- 等待首 token 的打字指示器（文档 3 第 5.10 / 7.2 节） -->
+              <template x-if="isSending && !streamingContent">
+                <div class="chat-message chat-message--assistant">
+                  <div class="chat-avatar"
+                       x-text="character?.name?.charAt(0) || '🌿'"></div>
+                  <div class="chat-bubble chat-bubble--assistant">
+                    <div class="typing-indicator">
+                      <span class="typing-indicator__dot"></span>
+                      <span class="typing-indicator__dot"></span>
+                      <span class="typing-indicator__dot"></span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <!-- 空对话欢迎语（首次进入，没有任何消息时） -->
+              <div class="chat-empty"
+                   x-show="!messages.length && !isStreaming && !isSending">
+                <p class="chat-empty__greeting"
+                   x-text="`和${character?.nickname || character?.name
+                     || '她'}说点什么吧`"></p>
+                <p x-text="character?.occupation
+                  ? `她是${character.occupation}。`
+                  : '我是你的陪伴角色，随时找我聊天。'"></p>
+              </div>
+
+              <!-- 重新生成（文档 3 第 7.2 节：输出中断/不满意时重来） -->
+              <div class="chat-regenerate" x-show="canRegenerate">
+                <button class="btn btn--ghost" type="button"
+                        @click="regenerate()">↻ 重新生成</button>
+              </div>
+            </div>
+
+            <div class="chat-input">
+              <textarea class="chat-input__field" x-model="input"
+                        x-ref="input"
+                        @keydown.enter="onEnter($event)"
+                        placeholder="说点什么..." rows="1"
+                        @input="$event.target.style.height = '';
+                                $event.target.style.height =
+                                Math.min($event.target.scrollHeight, 120) + 'px'"
+              ></textarea>
+              <button class="btn btn--primary btn--icon chat-input__send"
+                      @click="send()" :disabled="isSending"
+                      aria-label="发送">
+                <!-- 发送中：旋转圆点（文档 3 第 7.1 节） -->
+                <span class="btn__spinner" x-show="isSending"></span>
+                <svg x-show="!isSending" width="18" height="18"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+                  <path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 记忆浏览器（#/memory） -->
+          <div x-show="route === '/memory'" class="memory-viewer"
+               x-data="memoryViewerPage()" x-init="init()">
+            <div class="memory-viewer__inner">
+              <div class="memory-viewer__header">
+                <button class="memory-viewer__back btn btn--ghost btn--icon"
+                        @click="back()" aria-label="返回">←</button>
+                <h1 class="memory-viewer__title">记忆浏览器</h1>
+              </div>
+
+              <div class="memory-viewer__search">
+                <input class="input" x-model="query"
+                       placeholder="🔍 搜索..."
+                       @input.debounce.300ms="search()">
+              </div>
+
+              <div class="memory-viewer__filters">
+                <select class="input select" x-model="emotionTag"
+                        @change="search()">
+                  <template x-for="tag in emotionTags" :key="tag.value">
+                    <option :value="tag.value" x-text="tag.label"></option>
+                  </template>
+                </select>
+                <select class="input select" x-model="timeRange"
+                        @change="search()">
+                  <template x-for="range in timeRanges" :key="range.value">
+                    <option :value="range.value" x-text="range.label"></option>
+                  </template>
+                </select>
+              </div>
+
+              <template x-for="memory in memories" :key="memory.id">
+                <div class="memory-card">
+                  <div class="memory-card__head">
+                    <span class="memory-card__avatar">🌿</span>
+                    <span class="memory-card__time"
+                          x-text="formatRelative(memory.timestamp)"></span>
+                  </div>
+                  <p class="memory-card__content" x-text="memory.content"></p>
+                  <div class="memory-card__meta">
+                    <span class="memory-card__tag"
+                          :class="tagClass(memory.emotion_tag)"
+                          x-text="memory.emotion_tag || 'neutral'"></span>
+                    <span class="memory-card__stat"
+                          x-text="`强度 ${intensityOf(memory)} · 重要性
+                            ${importanceOf(memory)}`"></span>
+                    <span class="memory-card__stat"
+                          x-show="triggerOf(memory)"
+                          x-text="`触发原因：${triggerOf(memory)}`"></span>
+                  </div>
+                </div>
+              </template>
+
+              <p class="memory-viewer__empty"
+                 x-show="!loading && !searching && query && !memories.length">
+                没有找到相关记忆
+              </p>
+              <p class="memory-viewer__empty"
+                 x-show="!loading && !query">输入关键词开始搜索</p>
+            </div>
+          </div>
+
+          <!-- 角色编辑页（#/character/{id}/edit） -->
+          <div x-show="route.startsWith('/character/') &&
+                       route.endsWith('/edit')" class="character-edit"
+               x-data="characterEditPage()" x-init="init()">
+            <div class="character-edit__inner" x-show="!loading">
+              <div class="character-edit__header">
+                <button class="character-edit__back btn btn--ghost btn--icon"
+                        @click="cancel()" aria-label="返回">←</button>
+                <h1 class="character-edit__title"
+                    x-text="`编辑角色：${form.name}`"></h1>
+              </div>
+
+              <div class="edit-card">
+                <div class="edit-card__title">基础信息</div>
+                <div class="form-row">
+                  <span class="form-row__label">名字</span>
+                  <div class="form-row__control">
+                    <input class="input" x-model="form.name">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">昵称</span>
+                  <div class="form-row__control">
+                    <input class="input" x-model="form.nickname">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">性别</span>
+                  <div class="form-row__control">
+                    <select class="input select" x-model="form.gender">
+                      <option value="female">女</option>
+                      <option value="male">男</option>
+                      <option value="non_binary">中性</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">年龄</span>
+                  <div class="form-row__control">
+                    <input class="input" type="number"
+                           x-model.number="form.age" min="18" max="60">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">职业</span>
+                  <div class="form-row__control">
+                    <input class="input" x-model="form.occupation">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">可见性</span>
+                  <div class="form-row__control">
+                    <select class="input select" x-model="form.visibility">
+                      <option value="private">仅自己可见</option>
+                      <option value="public">所有人可见</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="edit-card">
+                <div class="edit-card__title">主题色</div>
+                <div class="theme-row">
+                  <input class="theme-row__swatch" type="color"
+                         x-model="form.theme.primary">
+                  <span class="theme-row__label">主色</span>
+                  <span class="theme-row__hex" x-text="form.theme.primary"></span>
+                </div>
+                <div class="theme-row">
+                  <input class="theme-row__swatch" type="color"
+                         x-model="form.theme.soft">
+                  <span class="theme-row__label">柔和</span>
+                  <span class="theme-row__hex" x-text="form.theme.soft"></span>
+                </div>
+                <div class="theme-row">
+                  <input class="theme-row__swatch" type="color"
+                         x-model="form.theme.deep">
+                  <span class="theme-row__label">深色</span>
+                  <span class="theme-row__hex" x-text="form.theme.deep"></span>
+                </div>
+                <button class="btn btn--ghost"
+                        @click="resetThemeFromTemplate()">从模板重置</button>
+              </div>
+
+              <div class="edit-card">
+                <div class="edit-card__title">高级设置</div>
+                <div class="form-row">
+                  <span class="form-row__label">主动行为</span>
+                  <div class="form-row__control">
+                    <button class="toggle"
+                            :class="{ 'toggle--on': form.proactiveEnabled }"
+                            @click="form.proactiveEnabled =
+                                   !form.proactiveEnabled"
+                            role="switch"
+                            :aria-checked="form.proactiveEnabled">
+                      <span class="toggle__knob"></span>
+                    </button>
+                    <span x-text="form.proactiveEnabled ? '开启' : '关闭'"></span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">频率</span>
+                  <div class="form-row__control">
+                    <input class="input" type="number" step="0.5" min="0.5"
+                           x-model="form.intervalHours"
+                           placeholder="留空跟随全局（4.5 小时）">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <span class="form-row__label">情感参数</span>
+                  <div class="form-row__control">
+                    <select class="input select" x-model="form.eventSensitivity">
+                      <template x-for="option in sensitivityOptions"
+                                :key="option.value">
+                        <option :value="option.value"
+                                x-text="option.label"></option>
+                      </template>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="edit-card">
+                <div class="edit-card__title">版本历史</div>
+                <div class="version-list">
+                  <template x-for="version in versions" :key="version.version_id">
+                    <div class="version-item">
+                      <span class="version-item__time"
+                            x-text="formatDateTime(version.changed_at)"></span>
+                      <span class="version-item__reason"
+                            x-text="version.change_reason || '更新'"></span>
+                      <button class="btn btn--ghost"
+                              style="font-size: var(--text-xs)"
+                              @click="rollback(version.version_id)">回滚</button>
+                    </div>
+                  </template>
+                  <p x-show="!versions.length" class="wizard__preview-state">
+                    暂无历史版本
+                  </p>
+                </div>
+              </div>
+
+              <div class="edit-card edit-card--danger">
+                <div class="edit-card__title">角色管理</div>
+                <div class="edit-card__danger-actions">
+                  <button class="btn btn--ghost"
+                          @click="exportCharacter()">导出角色卡</button>
+                  <button class="btn btn--danger"
+                          @click="confirmArchive()">归档角色</button>
+                </div>
+              </div>
+
+              <div class="character-edit__actions">
+                <button class="btn btn--ghost" @click="cancel()">取消</button>
+                <button class="btn btn--primary" @click="save()"
+                        :disabled="saving || !form.name.trim()"
+                        x-text="saving ? '保存中…' : '保存'"></button>
+              </div>
+            </div>
+
+            <div x-show="loading" class="page">
+              <div class="skeleton skeleton--title"></div>
+              <div class="skeleton skeleton--bubble"></div>
+              <div class="skeleton skeleton--bubble"></div>
+            </div>
+          </div>
+
+          <!-- 设置页（#/settings） -->
+          <div x-show="route === '/settings'" class="settings"
+               x-data="settingsPage()" x-init="init()">
+            <div class="settings__inner">
+              <div class="settings__header">
+                <button class="settings__back btn btn--ghost btn--icon"
+                        @click="back()" aria-label="返回">←</button>
+                <h1 class="settings__title">设置</h1>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card__title">账号</div>
+                <div class="settings-card__row">
+                  <span class="settings-card__label">用户名</span>
+                  <span class="settings-card__static"
+                        x-text="$store.app.user?.username || '—'"></span>
+                </div>
+                <div class="settings-card__row">
+                  <span class="settings-card__label">注册时间</span>
+                  <span class="settings-card__static"
+                        x-text="$store.app.user?.created_at || '—'"></span>
+                </div>
+                <div class="settings-card__actions">
+                  <button class="btn btn--ghost"
+                          @click="openPasswordModal()">修改密码</button>
+                  <button class="btn btn--ghost" @click="logout()">退出登录</button>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card__title">模型设置</div>
+                <div class="settings-card__row">
+                  <span class="settings-card__label">模式</span>
+                  <div class="settings-card__control">
+                    <select class="input select" x-model="llm.mode">
+                      <option value="api">API</option>
+                      <option value="local">本地</option>
+                    </select>
+                  </div>
+                </div>
+
+                <template x-if="llm.mode === 'api'">
+                  <div>
+                    <div class="settings-card__row">
+                      <span class="settings-card__label">提供商</span>
+                      <div class="settings-card__control">
+                        <select class="input select" x-model="llm.provider">
+                          <option value="openai">OpenAI</option>
+                          <option value="anthropic">Anthropic</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="settings-card__row">
+                      <span class="settings-card__label">模型</span>
+                      <div class="settings-card__control">
+                        <input class="input" x-model="llm.model"
+                               placeholder="gpt-4o">
+                      </div>
+                    </div>
+                    <!-- base_url 也可在设置页改（换网关/服务商不用动 .env） -->
+                    <div class="settings-card__row">
+                      <span class="settings-card__label">服务地址</span>
+                      <div class="settings-card__control">
+                        <input class="input" x-model="llm.baseUrl"
+                               placeholder="https://api.openai.com/v1/">
+                      </div>
+                    </div>
+                    <div class="settings-card__row">
+                      <span class="settings-card__label">API Key</span>
+                      <div class="settings-card__control">
+                        <input class="input api-key-field"
+                               :type="llm.showApiKey ? 'text' : 'password'"
+                               x-model="llm.apiKeyInput"
+                               @input="onApiKeyInput()"
+                               :placeholder="llm.apiKeyMasked
+                                 || 'sk-…****'">
+                        <button class="api-key-toggle" type="button"
+                                @click="toggleApiKeyVisibility()"
+                                x-text="llm.showApiKey ? '隐藏' : '显示'"></button>
+                        <span class="api-key-configured"
+                              x-show="llm.hasApiKey && !llm.apiKeyInput">
+                          已配置 ✓
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="llm.mode === 'local'">
+                  <div>
+                    <div class="settings-card__row">
+                      <span class="settings-card__label">服务地址</span>
+                      <div class="settings-card__control">
+                        <input class="input" x-model="llm.baseUrl"
+                               placeholder="http://localhost:8000/v1">
+                      </div>
+                    </div>
+                    <div class="settings-card__row">
+                      <span class="settings-card__label">模型</span>
+                      <div class="settings-card__control">
+                        <input class="input" x-model="llm.model"
+                               placeholder="qwen3.6-35b-a3b">
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+                <div class="settings__save">
+                  <button class="btn btn--primary" @click="saveLLM()"
+                          :disabled="savingLlm"
+                          x-text="savingLlm ? '保存中…' : '保存'"></button>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card__title">主动行为（全局）</div>
+                <div class="settings-card__row">
+                  <span class="settings-card__label">开关</span>
+                  <div class="settings-card__control">
+                    <button class="toggle"
+                            :class="{ 'toggle--on': proactive.enabled }"
+                            @click="proactive.enabled = !proactive.enabled"
+                            role="switch"
+                            :aria-checked="proactive.enabled">
+                      <span class="toggle__knob"></span>
+                    </button>
+                    <span x-text="proactive.enabled ? '开启' : '关闭'"></span>
+                  </div>
+                </div>
+                <div class="settings-card__row">
+                  <span class="settings-card__label">频率</span>
+                  <div class="settings-card__control">
+                    <input class="input" type="number" step="0.5" min="0.5"
+                           x-model.number="proactive.intervalHours">
+                    <span class="settings-card__static">小时</span>
+                  </div>
+                </div>
+                <div class="settings-card__row">
+                  <span class="settings-card__label">静默时段</span>
+                  <div class="settings-card__control">
+                    <input class="input" type="number" min="0" max="23"
+                           x-model.number="proactive.quietHours[0]"
+                           style="width: 72px">
+                    <span class="settings-card__static">~</span>
+                    <input class="input" type="number" min="0" max="23"
+                           x-model.number="proactive.quietHours[1]"
+                           style="width: 72px">
+                    <span class="settings-card__static">（用户本地时间）</span>
+                  </div>
+                </div>
+                <div class="settings__save">
+                  <button class="btn btn--primary" @click="saveProactive()"
+                          :disabled="savingProactive"
+                          x-text="savingProactive ? '保存中…' : '保存'"></button>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card__title">角色导入/导出</div>
+                <div class="settings-card__actions">
+                  <button class="btn btn--ghost" @click="importCharacter()"
+                          :disabled="importing"
+                          x-text="importing ? '导入中…' : '导入角色卡'"></button>
+                  <button class="btn btn--ghost"
+                          @click="exportAllCharacters()">导出所有角色</button>
+                </div>
+              </div>
+
+              <!-- 修改密码模态框（Phase 10：替掉 window.prompt） -->
+              <div class="modal-overlay" x-show="passwordModalOpen"
+                   @click.self="closePasswordModal()">
+                <div class="modal" @keydown.escape="closePasswordModal()">
+                  <h2 class="modal__title">修改密码</h2>
+                  <form class="auth-card__form"
+                        @submit.prevent="submitPassword()">
+                    <template x-if="passwordError">
+                      <p class="auth-card__error" x-text="passwordError"></p>
+                    </template>
+                    <input class="input" type="password"
+                           x-model="passwordForm.old"
+                           placeholder="当前密码"
+                           autocomplete="current-password">
+                    <input class="input" type="password"
+                           x-model="passwordForm.new"
+                           placeholder="新密码（至少 8 位）"
+                           autocomplete="new-password">
+                    <input class="input" type="password"
+                           x-model="passwordForm.confirm"
+                           placeholder="确认新密码"
+                           autocomplete="new-password">
+                    <div class="modal__actions">
+                      <button class="btn btn--ghost" type="button"
+                              @click="closePasswordModal()">取消</button>
+                      <button class="btn btn--primary" type="submit"
+                              :disabled="passwordSaving"
+                              x-text="passwordSaving ? '保存中…' : '确认修改'">
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- 状态面板（桌面常驻右侧；仅聊天路由显示） -->
+        <aside class="state-panel"
+               :class="{ 'state-panel--open': statePanelOpen }"
+               x-show="route.startsWith('/chat/')"
+               x-data="statePanel()" x-init="init()"
+               :data-breathing="breathing">
+          <div :class="{ 'state-panel--breathing': breathing }">
+            <div class="state-panel__section">
+              <h3 class="state-panel__title"
+                  x-text="`${character?.nickname || character?.name || ''}的内心`"></h3>
+              <div class="emotion-ring">
+                <template x-for="dim in expressionDimensions" :key="dim.key">
+                  <div class="emotion-ring__item">
+                    <span class="emotion-ring__label" x-text="dim.label"></span>
+                    <span class="emotion-ring__value"
+                          x-text="formatValue(state.expression[dim.key])"></span>
+                    <div class="emotion-ring__track">
+                      <div class="emotion-ring__fill"
+                           :style="`width: ${normalize(
+                             state.expression[dim.key], dim)}%`"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <div class="state-panel__section">
+              <h3 class="state-panel__title">关系状态</h3>
+              <div class="relationship-bar">
+                <div class="relationship-bar__stage" x-text="stageTitle()"></div>
+                <template x-for="dim in affectiveDimensions" :key="dim.key">
+                  <div class="relationship-bar__item">
+                    <span class="relationship-bar__label"
+                          x-text="dim.label"></span>
+                    <div class="relationship-bar__track">
+                      <div class="relationship-bar__fill"
+                           :class="`relationship-bar__fill--${
+                             dim.key.toLowerCase()}`"
+                           :style="`width: ${state.affective[dim.key] || 0}%`">
+                      </div>
+                    </div>
+                    <span class="relationship-bar__value"
+                          x-text="Math.round(state.affective[dim.key] || 0)">
+                    </span>
+                  </div>
+                </template>
+                <p class="state-panel__meta"
+                   x-text="$store.app.state?.last_updated || ''"></p>
+              </div>
+            </div>
+
+            <div class="state-panel__section">
+              <button class="state-panel__toggle"
+                      @click="internalExpanded = !internalExpanded">
+                <span x-text="internalExpanded ? '▾' : '▸'"></span>
+                <span>内心活动</span>
+              </button>
+              <div class="internal-layer" x-show="internalExpanded">
+                <template x-for="dim in internalDimensions" :key="dim.key">
+                  <div class="internal-layer__item">
+                    <span class="internal-layer__label" x-text="dim.label"></span>
+                    <div class="internal-layer__track">
+                      <div class="internal-layer__fill"
+                           :style="`width: ${(state.internal[dim.key] || 0)
+                             * 100}%`"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </template>
+  </div>
+
+  <!-- app.js 已移到 <head>（须先于 vendor Alpine 执行），此处不再重复加载 -->
+</body>
+</html>

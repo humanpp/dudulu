@@ -1,0 +1,70 @@
+/* 登录/注册页（文档 3 第 6.2 节）。 */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 30%, var(--accent-ghost), transparent 60%),
+    var(--bg-primary);
+  padding: var(--space-lg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  animation: auth-in var(--duration-slower) var(--ease-out);
+}
+
+@keyframes auth-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-card__logo {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-md);
+}
+
+.auth-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.auth-card__subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2xl);
+}
+
+.auth-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  text-align: left;
+}
+
+.auth-card__switch {
+  margin-top: var(--space-xl);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.auth-card__switch button {
+  color: var(--accent-deep);
+  font-weight: var(--weight-medium);
+  padding: var(--space-xs);
+}
+
+.auth-card__error {
+  font-size: var(--text-sm);
+  color: var(--color-error);
+  background: rgba(200, 138, 138, 0.10);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}

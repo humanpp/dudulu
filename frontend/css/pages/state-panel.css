@@ -1,0 +1,49 @@
+/* 状态面板页面样式（文档 3 第 6.7 节；呼吸动画见 9.6 节）。 */
+
+.state-panel__header {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.state-panel__meta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-sm);
+}
+
+/* 情绪环中心：阶段徽标（近似环形排布的中心位） */
+.emotion-ring__center {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-sm) 0 var(--space-md);
+}
+
+.emotion-ring__stage {
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--accent-deep);
+  background: var(--accent-ghost);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-lg);
+}
+
+/* 移动端：状态面板从底部滑出（文档 3 第 10.2 节：高 70vh，圆角顶部） */
+@media (max-width: 480px) {
+  .state-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 70vh;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    transform: translateY(100%);
+    border-left: none;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .state-panel--open { transform: translateY(0); }
+}

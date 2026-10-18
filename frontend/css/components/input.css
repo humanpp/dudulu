@@ -1,0 +1,85 @@
+/* 输入框（文档 3 第 5.7 节）。 */
+
+.input {
+  width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+/* 自定义下拉选择（文档 3 第 6.9 节：不用浏览器默认） */
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237A756D' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-lg) center;
+  padding-right: var(--space-3xl);
+  cursor: pointer;
+}
+
+/* 开关（toggle，文档 3 第 6.9 节） */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--border-default);
+  transition: background var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle--on {
+  background: var(--accent-primary);
+}
+
+.toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.toggle--on .toggle__knob {
+  transform: translateX(20px);
+}
+
+/* 带标签的表单行 */
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.form-row__label {
+  width: 80px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.form-row__control {
+  flex: 1;
+  min-width: 0;
+}
